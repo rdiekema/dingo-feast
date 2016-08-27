@@ -5,7 +5,6 @@ import io.diekema.dingo.feast.processors.html.HtmlReplaceAssetProcessor;
 import io.diekema.dingo.feast.processors.js.JavascriptProcessor;
 
 import java.io.IOException;
-import java.nio.file.*;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,12 +32,12 @@ public class Pipeline {
         return this;
     }
 
-    public Pipeline as(String name){
+    public Pipeline as(String name) {
         joint.add(new RenamingProcessor(name));
         return this;
     }
 
-    public Pipeline replace(Pipeline from, String target){
+    public Pipeline replace(Pipeline from, String target) {
         joint.add(new HtmlReplaceAssetProcessor(from, target));
         return this;
     }
@@ -48,7 +47,7 @@ public class Pipeline {
         return this;
     }
 
-    public List run() throws IOException {
+    public List<Asset> run() throws IOException {
         Exchange exchange = new Exchange();
 
         for (Processor processor : joint) {
