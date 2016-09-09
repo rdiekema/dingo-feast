@@ -29,14 +29,14 @@ public class FilesystemOutputProcessor implements Processor {
     @Override
     public void process(Exchange exchange) throws IOException {
         if (!StringUtils.isEmpty(outputPath)) {
-            for (Asset asset : (List<Asset>) exchange.getAssets()) {
+            for (Asset asset : exchange.getAssets()) {
                 Path absoluteOutPut = Paths.get(outputPath).toAbsolutePath();
 
                 if(!Files.exists(absoluteOutPut)){
                     Files.createDirectory(absoluteOutPut);
                 }
 
-                String absolutePath = absoluteOutPut.toString() + File.separator + asset.getName();
+                String absolutePath = absoluteOutPut.toString() + File.separator + asset.getName() + DSL.DOT + asset.getExtension();
                 FileWriter fileWriter = new FileWriter(absolutePath);
                 fileWriter.write(asset.getContent());
                 fileWriter.flush();

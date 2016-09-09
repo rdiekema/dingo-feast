@@ -31,6 +31,6 @@ public class JavascriptProcessor extends AbstractMessageProcessor {
 
         String minified = closureCompilerContext.minify(sourceFiles);
 
-        exchange.setAssets(Collections.singletonList(new Asset(null, minified, null)));
+        exchange.setAssets(Collections.singletonList(new Asset(null, minified, null, "js")));
     }
 }

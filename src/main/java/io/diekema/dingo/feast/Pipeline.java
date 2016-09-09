@@ -3,6 +3,7 @@ package io.diekema.dingo.feast;
 import io.diekema.dingo.feast.processors.*;
 import io.diekema.dingo.feast.processors.html.HtmlReplaceAssetProcessor;
 import io.diekema.dingo.feast.processors.js.JavascriptProcessor;
+import io.diekema.dingo.feast.processors.less.LessProcessor;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -38,13 +39,18 @@ public class Pipeline {
         return this;
     }
 
-    public Pipeline replace(Pipeline from, String target){
-        joint.add(new HtmlReplaceAssetProcessor(from, target));
+    public Pipeline replace(Pipeline from){
+        joint.add(new HtmlReplaceAssetProcessor(from));
         return this;
     }
 
     public Pipeline to(String outputPath) {
         joint.add(new FilesystemOutputProcessor(outputPath));
+        return this;
+    }
+
+    public Pipeline enrich(Pipeline pipeline){
+        joint.add(new EnrichingProcessor(pipeline));
         return this;
     }
 
@@ -81,6 +87,7 @@ public class Pipeline {
 
             // LESS Operations
             operations.put(DSL.Format.less + DOT + DSL.Operations.concat, new ConcatenatingProcessor());
+            operations.put(DSL.Format.less + DOT + DSL.Operations.compile, new LessProcessor());
         }
 
         static Processor get(String operation) {

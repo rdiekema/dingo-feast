@@ -1,6 +1,8 @@
 package io.diekema.dingo.feast.processors.html;
 
-import io.diekema.dingo.feast.*;
+import io.diekema.dingo.feast.Asset;
+import io.diekema.dingo.feast.Exchange;
+import io.diekema.dingo.feast.Pipeline;
 import io.diekema.dingo.feast.processors.Processor;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
@@ -10,9 +12,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
 import org.jsoup.select.Elements;
 
-import javax.swing.text.html.HTML;
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -20,11 +20,9 @@ import java.util.List;
  */
 public class HtmlReplaceAssetProcessor implements Processor {
 
-    private String target;
     private Pipeline assetTargets;
 
-    public HtmlReplaceAssetProcessor(Pipeline assetTargets, String target) {
-        this.target = target;
+    public HtmlReplaceAssetProcessor(Pipeline assetTargets) {
         this.assetTargets = assetTargets;
     }
 
@@ -34,20 +32,41 @@ public class HtmlReplaceAssetProcessor implements Processor {
 
         List<Asset> targetFiles = assetTargets.run();
 
-        for(Asset asset : targetFiles){
+        for (Asset asset : targetFiles) {
             Document document = Jsoup.parse(asset.getContent());
-            Elements elements = document.select(target);
 
-            for(Asset replacementAsset : assetList) {
-                Attributes attributes = new Attributes();
-                Attribute attribute = new Attribute("src", replacementAsset.getName());
-                attributes.put(attribute);
-                Element replacement = new Element(Tag.valueOf("script"), "", attributes);
+            for (Asset replacementAsset : assetList) {
+                Elements elements = document.select("." + replacementAsset.getName());
 
-                Element parent = elements.first().parent();
-                elements.remove();
+                if (elements.size() > 0) {
 
-                parent.appendChild(replacement);
+                    Element replacement = null;
+                    switch (replacementAsset.getExtension()) {
+                        case "js":
+                            Attributes scriptAttributes = new Attributes();
+                            Attribute attribute = new Attribute("src", replacementAsset.getName() + "." + replacementAsset.getExtension());
+                            scriptAttributes.put(attribute);
+                            replacement = new Element(Tag.valueOf("script"), "", scriptAttributes);
+                            break;
+                        case "css":
+                            Attributes linkAttributes = new Attributes();
+                            linkAttributes.put(new Attribute("rel", "stylesheet"));
+                            linkAttributes.put(new Attribute("type", "text/css"));
+                            linkAttributes.put(new Attribute("href", replacementAsset.getName() + "." + replacementAsset.getExtension()));
+                            replacement = new Element(Tag.valueOf("link"), "", linkAttributes);
+                            break;
+                    }
+
+                    if (replacement != null) {
+                        elements.first().replaceWith(replacement);
+
+                        for (int i = 1; i < elements.size(); i++) {
+                            elements.get(i).remove();
+                        }
+                    }
+
+                }
+
             }
 
             asset.setContent(document.html());
