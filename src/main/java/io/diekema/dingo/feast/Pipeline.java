@@ -34,7 +34,7 @@ public class Pipeline {
         return this;
     }
 
-    public Pipeline as(String name){
+    public Pipeline as(String name) {
         joint.add(new RenamingProcessor(name));
         return this;
     }
