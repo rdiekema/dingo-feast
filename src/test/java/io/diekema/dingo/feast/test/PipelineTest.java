@@ -2,10 +2,14 @@ package io.diekema.dingo.feast.test;
 
 import io.diekema.dingo.feast.Asset;
 import io.diekema.dingo.feast.Pipeline;
+import io.diekema.dingo.feast.endpoints.FileSystemDestination;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.List;
+
+import static io.diekema.dingo.feast.DSL.*;
+
 
 /**
  * Created by rdiekema on 8/23/16.
@@ -14,13 +18,12 @@ public class PipelineTest {
 
     @Test
     public void testNoOp() throws IOException {
-        Pipeline pipeline = new Pipeline();
 
-        pipeline.from("src/test/resources", "glob:{**/,}*.{scss,sass,js,css}")
-                .pipe("text.concat")
-                .to("target/out");
 
-        List<Asset> results = pipeline.run();
+        List<Asset> results = pipe().from(fileSystem("src/test/resources", "glob:{**/,}*.{less,js,html}"))
+                .flow("text.concat")
+                .file("target/dist")
+                .run();
 
         for (Asset result : results) {
             System.out.println(result.getContent());
@@ -32,14 +35,12 @@ public class PipelineTest {
     @Test
     public void testClosureCompiler() throws IOException {
 
-        Pipeline pipeline = new Pipeline();
-        pipeline
-                .from("src/test/resources", "glob:{**/,}*.{js}")
-                .pipe("js.min")
-                .to("target/out");
 
+        List<Asset> results = pipe().from(fileSystem("src/test/resources", "glob:{**/,}*.{js}"))
+                .flow("js.min")
+                .file("target/dist")
+                .run();
 
-        List<Asset> results = pipeline.run();
 
         for (Asset result : results) {
             System.out.println(result.getContent());
@@ -50,15 +51,13 @@ public class PipelineTest {
 
     @Test
     public void testJsMinifyRename() throws IOException {
-        Pipeline pipeline = new Pipeline();
-        pipeline
-                .from("src/test/resources", "glob:{**/,}*.{js}")
-                .pipe("js.min")
+
+        List<Asset> results = pipe().from(fileSystem("src/test/resources", "glob:{**/,}*.{js}"))
+                .flow("js.min")
                 .as("app.min.js")
-                .to("target/out");
+                .file("target/dist")
+                .run();
 
-
-        List<Asset> results = pipeline.run();
 
         for (Asset result : results) {
             System.out.println(result.getContent());
@@ -69,12 +68,10 @@ public class PipelineTest {
 
     @Test
     public void testHtmlOutput() throws IOException {
-        Pipeline pipeline = new Pipeline();
 
-        pipeline.from("src/test/resources", "glob:{**/,}*.{html}")
-                .to("target/out");
 
-        List<Asset> results = pipeline.run();
+        List<Asset> results = pipe().from(fileSystem("src/test/resources", "glob:{**/,}*.{html}")).file("target/dist").run();
+
 
         for (Asset result : results) {
             System.out.println(result.getContent());
@@ -85,17 +82,15 @@ public class PipelineTest {
 
     @Test
     public void testHtmlReferenceReplace() throws IOException {
-        Pipeline pipeline = new Pipeline();
-        pipeline
-                .from("src/test/resources", "glob:{**/,}*.{js}")
-                .pipe("js.min")
+
+        List<Asset> results = pipe().from(fileSystem("src/test/resources", "glob:{**/,}*.{js}"))
+                .flow("js.min")
                 .as("app.min.js")
-                .to("target/out")
-                .replace(new Pipeline().from("src/test/resources", "glob:{**/,}*.{html}"))
-                .to("target/out");
+                .file("target/dist")
+                .replace(new Pipeline().from(fileSystem("src/test/resources", "glob:{**/,}*.{html}")))
+                .file("target/dist")
+                .run();
 
-
-        List<Asset> results = pipeline.run();
 
         for (Asset result : results) {
             System.out.println(result.getContent());
@@ -106,10 +101,8 @@ public class PipelineTest {
 
     @Test
     public void testLessOutput() throws IOException {
-        Pipeline pipeline = new Pipeline();
-        pipeline.from("src/test/resources", "glob:{**/,}*.{less}").pipe("less.compile").as("app.css").to("target/out");
 
-        List<Asset> results = pipeline.run();
+        List<Asset> results = pipe().from(fileSystem("src/test/resources", "glob:{**/,}*.{less}")).flow("less.compile").as("less_test").to(new FileSystemDestination("target/dist")).run();
 
         for (Asset result : results) {
             System.out.println(result.getContent());
@@ -120,26 +113,47 @@ public class PipelineTest {
 
     @Test
     public void testLessAndJsReplaceOutput() throws IOException {
-        Pipeline pipeline = new Pipeline();
-        pipeline
-                .enrich(new Pipeline().from("src/test/resources", "glob:{**/,}*.{js}")
-                        .pipe("js.min")
-                        .as("app_scripts")
-                        .to("target/out"))
-                .enrich(new Pipeline().from("src/test/resources", "glob:{**/,}*.{less}")
-                        .pipe("less.compile")
-                        .as("app_styles")
-                        .to("target/out"))
-                .replace(new Pipeline().from("src/test/resources", "glob:{**/,}*.{html}"))
-                .to("target/out");
 
-
-        List<Asset> results = pipeline.run();
+        List<Asset> results = pipe()
+                .enrich(
+                        new Pipeline().from(fileSystem("src/test/resources", "glob:{**/,}*.{js}"))
+                                .flow("js.min")
+                                .as("app_scripts")
+                                .file("target/dist")
+                )
+                .enrich(
+                        new Pipeline().from(fileSystem("src/test/resources", "glob:{**/,}*.{less}"))
+                                .flow("less.compile")
+                                .as("app_styles")
+                                .file("target/dist")
+                )
+                .replace(
+                        new Pipeline().from(fileSystem("src/test/resources", "glob:{**/,}*.{html}"))
+                )
+                .file("target/dist")
+                .run();
 
         for (Asset result : results) {
             System.out.println(result.getContent());
             System.out.println(result.getName());
             System.out.println(result.getCurrentPath().toString());
         }
+    }
+
+    @Test
+    public void testNewPiping() throws IOException {
+
+        pipe().from(
+                pipe().from(fileSystem("src/test/resources", "glob:{**/,}*.{js}"))
+                        .flow("js.min")
+                        .as("app_scripts")
+                        .to(fileSystem("target/dist")),
+                pipe().from(fileSystem("src/test/resources", "glob:{**/,}*.{less}"))
+                        .flow("less.compile")
+                        .as("app_styles")
+                        .to(fileSystem("target/dist"))
+        ).replace(
+                pipe().from(fileSystem("src/test/resources", "glob:{**/,}*.{html}"))
+        ).to(fileSystem("target/dist")).log().run();
     }
 }

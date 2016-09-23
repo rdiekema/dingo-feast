@@ -1,49 +1,22 @@
 package io.diekema.dingo.feast;
 
+import io.diekema.dingo.feast.endpoints.FileSystemDestination;
+import io.diekema.dingo.feast.sources.FileSystemSource;
+
 /**
- * Created by rdiekema on 8/23/16.
+ * Created by rdiekema on 9/23/16.
  */
-public interface DSL {
 
-    String DOT = ".";
-
-    interface File {
-        String in = "inputRoot";
-        String out = "outputRoot";
-        String stream = "stream";
-        String originalName = "originalName";
-
-        interface Types {
-            String in = "in";
-            String out = "out";
-        }
+public class DSL {
+    public static Source fileSystem(String filePath, String syntaxAndPattern) {
+        return new FileSystemSource(filePath, syntaxAndPattern);
     }
 
-
-
-    interface Message {
-        interface Fields {
-            String content = "content";
-            String headers = "headers";
-        }
-
+    public static Destination fileSystem(String destination) {
+        return new FileSystemDestination(destination);
     }
 
-    interface Format {
-        String js = "js";
-        String sass = "sass";
-        String less = "less";
-        String css = "css";
-        String html = "html";
-        String text = "text";
+    public static Pipeline pipe() {
+        return new Pipeline();
     }
-
-    interface Operations {
-        String noop = "noop";
-        String concat = "concat";
-        String minify = "min";
-        String compile = "compile";
-        String replace = "replace";
-    }
-
 }

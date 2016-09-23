@@ -1,64 +1,108 @@
 package io.diekema.dingo.feast;
 
+import io.diekema.dingo.feast.endpoints.FileSystemDestination;
 import io.diekema.dingo.feast.processors.*;
 import io.diekema.dingo.feast.processors.html.HtmlReplaceAssetProcessor;
 import io.diekema.dingo.feast.processors.js.JavascriptProcessor;
 import io.diekema.dingo.feast.processors.less.LessProcessor;
+import io.diekema.dingo.feast.sources.FileSystemSource;
+import io.diekema.dingo.feast.sources.PipelineAggregateSource;
+import io.diekema.dingo.feast.sources.PipelineSource;
 
 import java.io.IOException;
-import java.nio.file.*;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
-import static io.diekema.dingo.feast.DSL.DOT;
+import static io.diekema.dingo.feast.Features.DOT;
 
 /**
  * Created by rdiekema on 8/23/16.
  */
 public class Pipeline {
 
-    private LinkedList<Processor> joint = new LinkedList<>();
+    Logger log = Logger.getLogger(Pipeline.class.getName());
+
+    private Source source;
+    private LinkedList<Processor> joints = new LinkedList<>();
+    private Destination destination;
 
     public Pipeline() {
     }
 
-    public Pipeline from(String filePath, String syntaxAndPattern) {
-        joint.add(new FileSystemInputProcessor(filePath, syntaxAndPattern));
+    public Pipeline from(Pipeline pipeline) {
+        this.source = new PipelineSource(pipeline);
         return this;
     }
 
-    public Pipeline pipe(String operation) {
-        joint.add(SupportedOperations.get(operation));
+    public Pipeline from(Source source) {
+        this.source = source;
+        return this;
+    }
+
+    public Pipeline from(Pipeline... pipelines) {
+        this.source = new PipelineAggregateSource(pipelines);
+        return this;
+    }
+
+    public void to(Pipeline... pipeline) {
+        for (Pipeline p : pipeline) {
+            p.from(new PipelineSource(this));
+        }
+    }
+
+    public Pipeline to(Destination destination) {
+        this.destination = destination;
+        return this;
+    }
+
+    public Pipeline flow(String operation) {
+        joints.add(SupportedOperations.get(operation));
         return this;
     }
 
     public Pipeline as(String name) {
-        joint.add(new RenamingProcessor(name));
+        joints.add(new RenamingProcessor(name));
         return this;
     }
 
-    public Pipeline replace(Pipeline from){
-        joint.add(new HtmlReplaceAssetProcessor(from));
+    public Pipeline replace(Pipeline from) {
+        joints.add(new HtmlReplaceAssetProcessor(from));
         return this;
     }
 
-    public Pipeline to(String outputPath) {
-        joint.add(new FilesystemOutputProcessor(outputPath));
+    public Pipeline file(String outputPath) {
+        joints.add(new FilesystemOutputProcessor(outputPath));
         return this;
     }
 
-    public Pipeline enrich(Pipeline pipeline){
-        joint.add(new EnrichingProcessor(pipeline));
+    public Pipeline enrich(Pipeline pipeline) {
+        joints.add(new EnrichingProcessor(pipeline));
         return this;
     }
 
-    public List run() throws IOException {
-        Exchange exchange = new Exchange();
+    public Pipeline log() {
+        joints.add(new LoggingProcessor());
+        return this;
+    }
 
-        for (Processor processor : joint) {
+    public List<Asset> run() throws IOException {
+
+        Exchange exchange;
+        if (source != null) {
+            exchange = source.collect();
+        } else {
+            exchange = new Exchange();
+        }
+
+        for (Processor processor : joints) {
             processor.process(exchange);
+        }
+
+        if (destination != null) {
+            destination.deliver(exchange);
         }
 
         return exchange.getAssets();
@@ -70,24 +114,24 @@ public class Pipeline {
 
         static {
             // Text Operations (Mostly for testing.
-            operations.put(DSL.Format.text + DOT + DSL.Operations.concat, new ConcatenatingProcessor());
+            operations.put(Features.Format.text + DOT + Features.Operations.concat, new ConcatenatingProcessor());
 
             // HTML Operations
-            operations.put(DSL.Format.html + DOT + DSL.Operations.noop, new AbstractMessageProcessor());
+            operations.put(Features.Format.html + DOT + Features.Operations.noop, new NoOpMessageProcessor());
 
             // CSS Operations
-            operations.put(DSL.Format.css + DOT + DSL.Operations.concat, new ConcatenatingProcessor());
+            operations.put(Features.Format.css + DOT + Features.Operations.concat, new ConcatenatingProcessor());
 
             // JS Operations
-            operations.put(DSL.Format.js + DOT + DSL.Operations.concat, new ConcatenatingProcessor());
-            operations.put(DSL.Format.js + DOT + DSL.Operations.minify, new JavascriptProcessor());
+            operations.put(Features.Format.js + DOT + Features.Operations.concat, new ConcatenatingProcessor());
+            operations.put(Features.Format.js + DOT + Features.Operations.minify, new JavascriptProcessor());
 
             // SASS Operations
-            operations.put(DSL.Format.sass + DOT + DSL.Operations.concat, new ConcatenatingProcessor());
+            operations.put(Features.Format.sass + DOT + Features.Operations.concat, new ConcatenatingProcessor());
 
             // LESS Operations
-            operations.put(DSL.Format.less + DOT + DSL.Operations.concat, new ConcatenatingProcessor());
-            operations.put(DSL.Format.less + DOT + DSL.Operations.compile, new LessProcessor());
+            operations.put(Features.Format.less + DOT + Features.Operations.concat, new ConcatenatingProcessor());
+            operations.put(Features.Format.less + DOT + Features.Operations.compile, new LessProcessor());
         }
 
         static Processor get(String operation) {

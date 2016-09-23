@@ -1,16 +1,24 @@
-import io.diekema.dingo.feast.*
+import io.diekema.dingo.feast.Asset
 
-Pipeline pipeline = new Pipeline()
-pipeline.from("src/test/resources", "glob:{**/,}*.{js}")
-        .pipe("js.min")
-        .as("app.min.js")
-        .to("target/out")
-        .replace(new Pipeline().from("src/test/resources", "glob:{**/,}*.{html}"), "script.app")
-        .to("./target/out");
+import static io.diekema.dingo.feast.DSL.fileSystem
+import static io.diekema.dingo.feast.DSL.pipe;
 
+List<Asset> results =
+        pipe()
+                .enrich(pipe().from(fileSystem("src/test/resources", "glob:{**/,}*.{js}"))
+                .flow("js.min")
+                .as("app_scripts")
+                .file("target/dist"))
 
-List<Asset> results = pipeline.run();
+                .enrich(pipe().from(fileSystem("src/test/resources", "glob:{**/,}*.{less}"))
+                .flow("less.compile")
+                .as("app_styles")
+                .file("target/dist"))
 
-for(Asset result in results){
-     print(result.getContent())
+                .replace(pipe().from(fileSystem("src/test/resources", "glob:{**/,}*.{html}")))
+                .file("target/dist")
+                .run()
+
+for (Asset result in results) {
+    print(result.getContent())
 }

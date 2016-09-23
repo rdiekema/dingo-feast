@@ -3,8 +3,7 @@ package io.diekema.dingo.feast.processors.js;
 import com.google.javascript.jscomp.SourceFile;
 import io.diekema.dingo.feast.Asset;
 import io.diekema.dingo.feast.Exchange;
-import io.diekema.dingo.feast.Message;
-import io.diekema.dingo.feast.processors.AbstractMessageProcessor;
+import io.diekema.dingo.feast.processors.NoOpMessageProcessor;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -15,7 +14,7 @@ import java.util.List;
 /**
  * Created by rdiekema on 8/23/16.
  */
-public class JavascriptProcessor extends AbstractMessageProcessor {
+public class JavascriptProcessor extends NoOpMessageProcessor {
 
     @Override
     public void process(Exchange exchange) throws IOException {

@@ -1,7 +1,8 @@
-package io.diekema.dingo.feast.processors;
+package io.diekema.dingo.feast.endpoints;
 
 import io.diekema.dingo.feast.Asset;
 import io.diekema.dingo.feast.Features;
+import io.diekema.dingo.feast.Destination;
 import io.diekema.dingo.feast.Exchange;
 import org.apache.commons.lang3.StringUtils;
 
@@ -13,23 +14,23 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * Created by rdiekema on 8/23/16.
+ * Created by rdiekema on 9/23/16.
  */
-public class FilesystemOutputProcessor implements Processor {
+public class FileSystemDestination implements Destination {
 
     String outputPath;
 
-    public FilesystemOutputProcessor(String outputPath) {
+    public FileSystemDestination(String outputPath) {
         this.outputPath = outputPath;
     }
 
     @Override
-    public void process(Exchange exchange) throws IOException {
+    public boolean deliver(Exchange exchange) throws IOException {
         if (!StringUtils.isEmpty(outputPath)) {
             for (Asset asset : exchange.getAssets()) {
                 Path absoluteOutPut = Paths.get(outputPath).toAbsolutePath();
 
-                if(!Files.exists(absoluteOutPut)){
+                if (!Files.exists(absoluteOutPut)) {
                     Files.createDirectory(absoluteOutPut);
                 }
 
@@ -41,5 +42,6 @@ public class FilesystemOutputProcessor implements Processor {
                 asset.setCurrentPath(Paths.get(absolutePath));
             }
         }
+        return false;
     }
 }

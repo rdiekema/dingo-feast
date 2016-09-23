@@ -20,16 +20,19 @@ public class Asset {
     }
 
     public Asset(String name, String content, Path originalPath) {
-        this.name = name;
         this.content = content;
-        this.originalPath = originalPath;
+        this.originalPath = originalPath != null ? originalPath.toAbsolutePath() : null;
 
-        if(name.contains(".")){
+        if(name != null && name.contains(".")){
             String[] nameWithExtension = name.split("\\.");
 
             if(nameWithExtension.length > 1){
-                extension = nameWithExtension[1];
+                extension = nameWithExtension[nameWithExtension.length - 1];
+                this.name = name.substring(0, name.indexOf(extension)-1);
             }
+        }
+        else{
+            this.name = name;
         }
     }
 
@@ -71,5 +74,15 @@ public class Asset {
 
     public void setExtension(String extension) {
         this.extension = extension;
+    }
+
+    @Override
+    public String toString() {
+        return "Asset{" +
+                "name='" + name + "'" +
+                ", originalPath='" + originalPath + "'" +
+                ", currentPath='" + currentPath + "'" +
+                ", extension='" + extension + "'" +
+                '}';
     }
 }

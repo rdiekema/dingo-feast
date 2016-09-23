@@ -5,7 +5,9 @@ import com.github.sommeri.less4j.LessCompiler;
 import com.github.sommeri.less4j.core.ThreadUnsafeLessCompiler;
 import io.diekema.dingo.feast.Asset;
 import io.diekema.dingo.feast.Exchange;
-import io.diekema.dingo.feast.processors.AbstractMessageProcessor;
+import io.diekema.dingo.feast.processors.NoOpMessageProcessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -13,8 +15,9 @@ import java.util.Arrays;
 /**
  * Created by rdiekema on 9/9/16.
  */
-public class LessProcessor extends AbstractMessageProcessor {
+public class LessProcessor extends NoOpMessageProcessor {
 
+    Logger log = LoggerFactory.getLogger(LessProcessor.class.getName());
 
     @Override
     public void process(Exchange exchange) throws IOException {
@@ -30,7 +33,7 @@ public class LessProcessor extends AbstractMessageProcessor {
             LessCompiler.CompilationResult result = compiler.compile(lessConcatenator.toString());
             exchange.setAssets(Arrays.asList(new Asset("app", result.getCss(), null, "css"), new Asset("app", result.getSourceMap(), null, "map")));
         } catch (Less4jException e) {
-            e.printStackTrace(System.out);
+            log.error(e.getMessage());
         }
     }
 }
