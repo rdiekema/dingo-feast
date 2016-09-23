@@ -1,11 +1,15 @@
+/*
+ * Copyright (c) 2016. Richard Diekema - All Rights Reserved
+ * Unauthorized copying of this file, via any medium is strictly prohibited Proprietary and confidential
+ * Written by Richard Diekema <rdiekema@gmail.com>, September 2016
+ */
+
 package io.diekema.dingo.feast;
 
-import io.diekema.dingo.feast.endpoints.FileSystemDestination;
 import io.diekema.dingo.feast.processors.*;
 import io.diekema.dingo.feast.processors.html.HtmlReplaceAssetProcessor;
 import io.diekema.dingo.feast.processors.js.JavascriptProcessor;
 import io.diekema.dingo.feast.processors.less.LessProcessor;
-import io.diekema.dingo.feast.sources.FileSystemSource;
 import io.diekema.dingo.feast.sources.PipelineAggregateSource;
 import io.diekema.dingo.feast.sources.PipelineSource;
 
@@ -23,7 +27,7 @@ import static io.diekema.dingo.feast.Features.DOT;
  */
 public class Pipeline {
 
-    Logger log = Logger.getLogger(Pipeline.class.getName());
+    private static final Logger log = Logger.getLogger(Pipeline.class.getName());
 
     private Source source;
     private LinkedList<Processor> joints = new LinkedList<>();

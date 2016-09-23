@@ -17,7 +17,7 @@ import java.util.Arrays;
  */
 public class LessProcessor extends NoOpMessageProcessor {
 
-    Logger log = LoggerFactory.getLogger(LessProcessor.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(LessProcessor.class.getName());
 
     @Override
     public void process(Exchange exchange) throws IOException {

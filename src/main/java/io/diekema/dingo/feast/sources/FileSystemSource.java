@@ -3,7 +3,6 @@ package io.diekema.dingo.feast.sources;
 import io.diekema.dingo.feast.Asset;
 import io.diekema.dingo.feast.Exchange;
 import io.diekema.dingo.feast.Source;
-import io.diekema.dingo.feast.processors.FileSystemInputProcessor;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +24,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class FileSystemSource implements Source {
 
-    Logger log = LoggerFactory.getLogger(FileSystemSource.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(FileSystemSource.class.getName());
 
     private String inputPath;
     private String inputPatternAndSyntax;

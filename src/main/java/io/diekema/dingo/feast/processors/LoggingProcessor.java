@@ -11,7 +11,7 @@ import java.io.IOException;
  * Created by rdiekema on 9/23/16.
  */
 public class LoggingProcessor implements Processor {
-    Logger log = LoggerFactory.getLogger(LoggingProcessor.class.getName());
+    private static final  Logger log = LoggerFactory.getLogger(LoggingProcessor.class.getName());
 
     @Override
     public void process(Exchange exchange) throws IOException {

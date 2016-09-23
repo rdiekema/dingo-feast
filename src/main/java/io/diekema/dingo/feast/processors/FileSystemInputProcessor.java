@@ -22,7 +22,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class FileSystemInputProcessor implements Processor {
 
-    Logger log = LoggerFactory.getLogger(FileSystemInputProcessor.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(FileSystemInputProcessor.class.getName());
 
     private String inputPath;
     private String inputPatternAndSyntax;
