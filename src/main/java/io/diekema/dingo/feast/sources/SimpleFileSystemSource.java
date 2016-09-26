@@ -4,9 +4,11 @@
  * Written by Richard Diekema <rdiekema@gmail.com>, September 2016
  */
 
-package io.diekema.dingo.feast.processors;
+package io.diekema.dingo.feast.sources;
 
-import io.diekema.dingo.feast.*;
+import io.diekema.dingo.feast.Asset;
+import io.diekema.dingo.feast.Exchange;
+import io.diekema.dingo.feast.Source;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -24,27 +27,27 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
- * Created by rdiekema on 8/24/16.
+ * Created by rdiekema on 9/25/16.
  */
-public class FileSystemInputProcessor implements Processor {
+public class SimpleFileSystemSource implements Source {
 
-    private static final Logger log = LoggerFactory.getLogger(FileSystemInputProcessor.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(RecursiveFileSystemSource.class.getName());
 
     private String inputPath;
     private String inputPatternAndSyntax;
 
-    public FileSystemInputProcessor(String inputPath, String inputPatternAndSyntax) {
-        this.inputPath = inputPath;
-        this.inputPatternAndSyntax = inputPatternAndSyntax;
+    public SimpleFileSystemSource(String filePath, String syntaxAndPattern) {
+        this.inputPath = filePath;
+        this.inputPatternAndSyntax = syntaxAndPattern;
     }
 
     @Override
-    public void process(Exchange exchange) throws IOException {
+    public Exchange collect() throws IOException {
         final PathMatcher pathMatcher = FileSystems.getDefault().getPathMatcher(inputPatternAndSyntax);
         final AtomicInteger fileCount = new AtomicInteger(0);
         final List<FilePayload> payloads = new LinkedList<>();
 
-        Files.walkFileTree(FileSystems.getDefault().getPath(inputPath), new SimpleFileVisitor<Path>() {
+        Files.walkFileTree(FileSystems.getDefault().getPath(inputPath), Collections.<FileVisitOption>emptySet(), 1, new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                 if (pathMatcher.matches(file)) {
@@ -68,7 +71,10 @@ public class FileSystemInputProcessor implements Processor {
             assets.add(new Asset(filePayload.getName(), IOUtils.toString(filePayload.getInputStream(), UTF_8), filePayload.getPath()));
         }
 
+        Exchange exchange = new Exchange();
         exchange.enrich(assets);
+
+        return exchange;
     }
 
     static class FilePayload {
@@ -94,4 +100,5 @@ public class FileSystemInputProcessor implements Processor {
             return inputStream;
         }
     }
+
 }

@@ -156,4 +156,14 @@ public class PipelineTest {
                 pipe().from(fileSystem("src/test/resources", "glob:{**/,}*.{html}"))
         ).to(fileSystem("target/dist")).log().run();
     }
+
+    @Test
+    public void testTemplateCaching() throws IOException {
+        pipe()
+                .from(fileSystem("src/test/resources/js/templates", "glob:{**/,}*.{html}"))
+                .process(templateCache("exampleApp", "templatemodule", "templates.cache"))
+                .log()
+                .to(fileSystem("target/dist/templates"))
+                .run();
+    }
 }

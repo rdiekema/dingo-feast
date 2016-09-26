@@ -87,6 +87,11 @@ public class Pipeline {
         return this;
     }
 
+    public Pipeline process(Processor processor){
+        joints.add(processor);
+        return this;
+    }
+
     public Pipeline log() {
         joints.add(new LoggingProcessor());
         return this;

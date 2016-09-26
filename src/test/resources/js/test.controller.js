@@ -8,5 +8,6 @@
 
     function AppController($scope) {
         $scope.message = "Hello World (from Closure Compiler)!";
+        $scope.templateMessage = "Hello from a template file!";
     }
 })();

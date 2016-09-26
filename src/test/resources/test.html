@@ -1,27 +1,31 @@
 <!DOCTYPE html>
 
 <html ng-app="exampleApp">
-<head>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <!-- inject resources here based on class attribute -->
+        <link class="app_styles" rel="stylesheet" type="text/css" href="test.css">
 
-    <!-- inject resources here based on class attribute -->
-    <link class="app_styles" rel="stylesheet" type="text/css" href="test.css">
+        <title>
+            Test
+        </title>
+    </head>
 
-    <title>
-        Test
-    </title>
-</head>
+    <body ng-controller="AppController">
+        <h1 class="message">{{message}}</h1>
 
-<body ng-controller="AppController">
+        <div ng-include src="'test1.html'"></div>
 
-<h1 class="message">{{message}}</h1>
+        <!-- inject resources here based on class attribute -->
+        <script class="app_scripts" src="angular.js"></script>
+        <script class="app_scripts" src="test.js"></script>
+        <script class="app_scripts" src="test2.js"></script>
+        <!-- end injected resources -->
 
+        <!-- inject resources here based on class attribute -->
+        <script class="templates_cache" src=""></script>
+        <!-- end injected resources -->
 
-<!-- inject resources here based on class attribute -->
-<script class="app_scripts" src="angular.js"></script>
-<script class="app_scripts" src="test.js"></script>
-<script class="app_scripts" src="test2.js"></script>
-<!-- end injected resources -->
-
-<span class="test"></span>
-</body>
+        <span class="test"></span>
+    </body>
 </html>
