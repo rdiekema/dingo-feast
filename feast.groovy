@@ -5,6 +5,9 @@
  */
 
 import io.diekema.dingo.feast.Asset
+import io.diekema.dingo.feast.Exchange
+import io.diekema.dingo.feast.processors.Processor
+import org.slf4j.LoggerFactory
 
 import static io.diekema.dingo.feast.DSL.*
 
@@ -23,6 +26,7 @@ List<Asset> results =
         pipe()
         .from(jsPipe, lessPipe, templateCachePipe)
         .replace(htmlPipe)
+        .process(new LoggingGroovyClass())
         .file(outputDir)
         .run()
 
@@ -32,3 +36,13 @@ List<Asset> results =
 
 println "\nTotal Time:"
 println new Date().getTime() - start.getTime() + "ms"
+
+
+// Test class to demonstrate implementing additional processors from within a groovy source file.
+class LoggingGroovyClass implements Processor {
+    def log = LoggerFactory.getLogger(LoggingGroovyClass.class.getName());
+    @Override
+    void process(Exchange exchange) throws IOException {
+        log.info(exchange.getAssets().get(0).getName())
+    }
+}

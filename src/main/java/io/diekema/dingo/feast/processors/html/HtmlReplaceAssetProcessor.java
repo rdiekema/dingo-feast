@@ -8,6 +8,7 @@ package io.diekema.dingo.feast.processors.html;
 
 import io.diekema.dingo.feast.Asset;
 import io.diekema.dingo.feast.Exchange;
+import io.diekema.dingo.feast.Features;
 import io.diekema.dingo.feast.Pipeline;
 import io.diekema.dingo.feast.processors.Processor;
 import org.jsoup.Jsoup;
@@ -48,13 +49,13 @@ public class HtmlReplaceAssetProcessor implements Processor {
 
                     Element replacement = null;
                     switch (replacementAsset.getExtension()) {
-                        case "js":
+                        case Features.Format.js:
                             Attributes scriptAttributes = new Attributes();
                             Attribute attribute = new Attribute("src", replacementAsset.getName() + "." + replacementAsset.getExtension());
                             scriptAttributes.put(attribute);
                             replacement = new Element(Tag.valueOf("script"), "", scriptAttributes);
                             break;
-                        case "css":
+                        case Features.Format.css:
                             Attributes linkAttributes = new Attributes();
                             linkAttributes.put(new Attribute("rel", "stylesheet"));
                             linkAttributes.put(new Attribute("type", "text/css"));

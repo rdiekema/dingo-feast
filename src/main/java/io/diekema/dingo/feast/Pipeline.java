@@ -6,12 +6,14 @@
 
 package io.diekema.dingo.feast;
 
+import io.diekema.dingo.feast.destinations.Destination;
 import io.diekema.dingo.feast.processors.*;
 import io.diekema.dingo.feast.processors.html.HtmlReplaceAssetProcessor;
 import io.diekema.dingo.feast.processors.js.JavascriptProcessor;
 import io.diekema.dingo.feast.processors.less.LessProcessor;
 import io.diekema.dingo.feast.sources.PipelineAggregateSource;
 import io.diekema.dingo.feast.sources.PipelineSource;
+import io.diekema.dingo.feast.sources.Source;
 
 import java.io.IOException;
 import java.util.HashMap;

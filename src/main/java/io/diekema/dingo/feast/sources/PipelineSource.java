@@ -8,7 +8,6 @@ package io.diekema.dingo.feast.sources;
 
 import io.diekema.dingo.feast.Exchange;
 import io.diekema.dingo.feast.Pipeline;
-import io.diekema.dingo.feast.Source;
 
 import java.io.IOException;
 

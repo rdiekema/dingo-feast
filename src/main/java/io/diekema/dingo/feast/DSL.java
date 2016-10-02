@@ -6,10 +6,12 @@
 
 package io.diekema.dingo.feast;
 
-import io.diekema.dingo.feast.endpoints.FileSystemDestination;
+import io.diekema.dingo.feast.destinations.Destination;
+import io.diekema.dingo.feast.destinations.FileSystemDestination;
 import io.diekema.dingo.feast.processors.angularjs.TemplateCacheProcessor;
 import io.diekema.dingo.feast.sources.RecursiveFileSystemSource;
 import io.diekema.dingo.feast.sources.SimpleFileSystemSource;
+import io.diekema.dingo.feast.sources.Source;
 
 /**
  * Created by rdiekema on 9/23/16.

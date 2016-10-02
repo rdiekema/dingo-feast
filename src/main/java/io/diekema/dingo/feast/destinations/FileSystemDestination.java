@@ -1,8 +1,7 @@
-package io.diekema.dingo.feast.endpoints;
+package io.diekema.dingo.feast.destinations;
 
 import io.diekema.dingo.feast.Asset;
 import io.diekema.dingo.feast.Features;
-import io.diekema.dingo.feast.Destination;
 import io.diekema.dingo.feast.Exchange;
 import org.apache.commons.lang3.StringUtils;
 

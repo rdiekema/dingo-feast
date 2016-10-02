@@ -4,15 +4,17 @@
  * Written by Richard Diekema <rdiekema@gmail.com>, September 2016
  */
 
-package io.diekema.dingo.feast;
+package io.diekema.dingo.feast.destinations;
+
+import io.diekema.dingo.feast.Exchange;
 
 import java.io.IOException;
 
 /**
  * Created by rdiekema on 9/14/16.
  */
-public interface Source {
+public interface Destination {
 
-    Exchange collect() throws IOException;
+    boolean deliver(Exchange exchange) throws IOException;
 
 }

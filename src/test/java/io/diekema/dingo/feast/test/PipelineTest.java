@@ -2,7 +2,7 @@ package io.diekema.dingo.feast.test;
 
 import io.diekema.dingo.feast.Asset;
 import io.diekema.dingo.feast.Pipeline;
-import io.diekema.dingo.feast.endpoints.FileSystemDestination;
+import io.diekema.dingo.feast.destinations.FileSystemDestination;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -161,7 +161,7 @@ public class PipelineTest {
     public void testTemplateCaching() throws IOException {
         pipe()
                 .from(fileSystem("src/test/resources/js/templates", "glob:{**/,}*.{html}"))
-                .process(templateCache("exampleApp", "templatemodule", "templates.cache"))
+                .process(templateCache("exampleApp","templates.cache"))
                 .log()
                 .to(fileSystem("target/dist/templates"))
                 .run();

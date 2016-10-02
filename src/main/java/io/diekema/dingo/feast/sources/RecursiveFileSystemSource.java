@@ -8,7 +8,6 @@ package io.diekema.dingo.feast.sources;
 
 import io.diekema.dingo.feast.Asset;
 import io.diekema.dingo.feast.Exchange;
-import io.diekema.dingo.feast.Source;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
