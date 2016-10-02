@@ -64,6 +64,14 @@
             <version>1.7.21</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/commons-codec/commons-codec -->
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.10</version>
+        </dependency>
+
+
         <!-- dependencies file annotations -->
         <dependency>
             <groupId>org.apache.maven.plugin-tools</groupId>

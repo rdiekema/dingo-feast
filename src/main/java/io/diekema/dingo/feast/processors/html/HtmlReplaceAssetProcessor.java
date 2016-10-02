@@ -51,7 +51,7 @@ public class HtmlReplaceAssetProcessor implements Processor {
                     switch (replacementAsset.getExtension()) {
                         case Features.Format.js:
                             Attributes scriptAttributes = new Attributes();
-                            Attribute attribute = new Attribute("src", replacementAsset.getName() + "." + replacementAsset.getExtension());
+                            Attribute attribute = new Attribute("src", replacementAsset.getName() + replacementAsset.getRevision() + "." + replacementAsset.getExtension());
                             scriptAttributes.put(attribute);
                             replacement = new Element(Tag.valueOf("script"), "", scriptAttributes);
                             break;
@@ -59,7 +59,7 @@ public class HtmlReplaceAssetProcessor implements Processor {
                             Attributes linkAttributes = new Attributes();
                             linkAttributes.put(new Attribute("rel", "stylesheet"));
                             linkAttributes.put(new Attribute("type", "text/css"));
-                            linkAttributes.put(new Attribute("href", replacementAsset.getName() + "." + replacementAsset.getExtension()));
+                            linkAttributes.put(new Attribute("href", replacementAsset.getName() + replacementAsset.getRevision() + "." + replacementAsset.getExtension()));
                             replacement = new Element(Tag.valueOf("link"), "", linkAttributes);
                             break;
                     }

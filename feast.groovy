@@ -4,9 +4,10 @@
  * Written by Richard Diekema <rdiekema@gmail.com>, September 2016
  */
 
+
 import io.diekema.dingo.feast.Asset
 import io.diekema.dingo.feast.Exchange
-import io.diekema.dingo.feast.processors.Processor
+import io.diekema.dingo.feast.processors.*
 import org.slf4j.LoggerFactory
 
 import static io.diekema.dingo.feast.DSL.*
@@ -15,20 +16,26 @@ def outputDir = "target/dist"
 def inputDir = "src/test/resources"
 def templateDir = inputDir + "/js/templates"
 
-def jsPipe = pipe().from(fileSystem(inputDir, "glob:{**/,}*.{js}", true)).flow("js.min").as("app_scripts").file(outputDir)
-def lessPipe = pipe().from(fileSystem(inputDir, "glob:{**/,}*.{less}")).flow("less.compile").as("app_styles").file(outputDir)
-def templateCachePipe = pipe().from(fileSystem(templateDir, "glob:{**/,}*.{html}")).process(templateCache("exampleApp", "templates_cache")).file(outputDir);
+def jsPipe = pipe().from(fileSystem(inputDir, "glob:{**/,}*.{js}", true)).flow("js.min").as("app_scripts").process(new Version() as Processor).file(outputDir)
+def lessPipe = pipe().from(fileSystem(inputDir, "glob:{**/,}*.{less}")).flow("less.compile").as("app_styles").process(new Version() as Processor).file(outputDir)
+
+def templateCachePipe = pipe().from(fileSystem(templateDir, "glob:{**/,}*.{html}"))
+        .process(templateCache("app", "templates"))
+        .flow("js.min")
+        .as("templates")
+        .process(new Version() as Processor)
+        .file(outputDir)
+
 def htmlPipe = pipe().from(fileSystem(inputDir, "glob:{**/,}*.{html}"));
 
 def start = new Date()
 
 List<Asset> results =
         pipe()
-        .from(jsPipe, lessPipe, templateCachePipe)
-        .replace(htmlPipe)
-        .process(new LoggingGroovyClass())
-        .file(outputDir)
-        .run()
+                .from(jsPipe, lessPipe, templateCachePipe)
+                .replace(htmlPipe)
+                .file(outputDir)
+                .run()
 
 //for (Asset result in results) {
 //    print(result.getContent())
@@ -37,12 +44,14 @@ List<Asset> results =
 println "\nTotal Time:"
 println new Date().getTime() - start.getTime() + "ms"
 
-
 // Test class to demonstrate implementing additional processors from within a groovy source file.
-class LoggingGroovyClass implements Processor {
+public class LoggingGroovyClass implements Processor {
     def log = LoggerFactory.getLogger(LoggingGroovyClass.class.getName());
+
     @Override
     void process(Exchange exchange) throws IOException {
         log.info(exchange.getAssets().get(0).getName())
     }
 }
+
+

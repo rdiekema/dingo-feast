@@ -17,6 +17,7 @@ public class Asset {
     private Path originalPath;
     private Path currentPath;
     private String extension;
+    private String revision;
 
     public Asset(String name, String content, Path originalPath, String extension){
         this.name = name;
@@ -40,6 +41,15 @@ public class Asset {
         else{
             this.name = name;
         }
+    }
+
+    public Asset(String name, String content, Path originalPath, Path currentPath, String extension, String revision) {
+        this.name = name;
+        this.content = content;
+        this.originalPath = originalPath;
+        this.currentPath = currentPath;
+        this.extension = extension;
+        this.revision = revision;
     }
 
     public String getName() {
@@ -80,6 +90,14 @@ public class Asset {
 
     public void setExtension(String extension) {
         this.extension = extension;
+    }
+
+    public String getRevision() {
+        return revision;
+    }
+
+    public void setRevision(String revision) {
+        this.revision = revision;
     }
 
     @Override

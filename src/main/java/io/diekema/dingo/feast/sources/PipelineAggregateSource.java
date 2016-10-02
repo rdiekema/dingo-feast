@@ -32,7 +32,6 @@ public class PipelineAggregateSource implements Source {
 
     @Override
     public Exchange collect() throws IOException {
-
         List<Future<List<Asset>>> submitted = new ArrayList<>();
         for (Pipeline p : sourcePipelines) {
             submitted.add(completionService.submit(new PipelineCallable(p)));

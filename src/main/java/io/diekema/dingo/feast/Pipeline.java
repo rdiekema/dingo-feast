@@ -100,7 +100,6 @@ public class Pipeline {
     }
 
     public List<Asset> run() throws IOException {
-
         Exchange exchange;
         if (source != null) {
             exchange = source.collect();

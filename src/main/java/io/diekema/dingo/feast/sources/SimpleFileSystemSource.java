@@ -30,7 +30,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class SimpleFileSystemSource implements Source {
 
-    private static final Logger log = LoggerFactory.getLogger(RecursiveFileSystemSource.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(SimpleFileSystemSource.class.getName());
 
     private String inputPath;
     private String inputPatternAndSyntax;
