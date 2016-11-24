@@ -11,6 +11,7 @@ import io.diekema.dingo.feast.destinations.FileSystemDestination;
 import io.diekema.dingo.feast.processors.angularjs.TemplateCacheProcessor;
 import io.diekema.dingo.feast.sources.RecursiveFileSystemSource;
 import io.diekema.dingo.feast.sources.SimpleFileSystemSource;
+import io.diekema.dingo.feast.sources.SingleFileSource;
 import io.diekema.dingo.feast.sources.Source;
 
 /**
@@ -29,6 +30,10 @@ public class DSL {
         else{
             return fileSystem(filePath, syntaxAndPattern);
         }
+    }
+
+    public static Source singleFile(String filePath){
+        return new SingleFileSource(filePath);
     }
 
     public static Destination fileSystem(String destination) {

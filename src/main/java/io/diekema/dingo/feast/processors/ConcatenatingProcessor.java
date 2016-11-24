@@ -18,10 +18,10 @@ public class ConcatenatingProcessor extends NoOpMessageProcessor {
     @Override
     public void process(Exchange exchange) {
         StringBuilder stringBuilder = new StringBuilder();
-        for (Asset asset : (List<Asset>)exchange.getAssets()) {
+        for (Asset asset : exchange.getAssets()) {
             stringBuilder.append(asset.getContent()).append("\n");
         }
 
-        exchange.setAssets(Collections.singletonList(new Asset(null, stringBuilder.toString(), null)));
+        exchange.setAssets(Collections.singletonList(new Asset(null, stringBuilder.toString(), null, exchange.getAssets().get(0).getExtension())));
     }
 }

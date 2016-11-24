@@ -1,8 +1,8 @@
 package io.diekema.dingo.feast.destinations;
 
 import io.diekema.dingo.feast.Asset;
-import io.diekema.dingo.feast.Features;
 import io.diekema.dingo.feast.Exchange;
+import io.diekema.dingo.feast.Features;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -26,11 +26,12 @@ public class FileSystemDestination implements Destination {
     @Override
     public boolean deliver(Exchange exchange) throws IOException {
         if (!StringUtils.isEmpty(outputPath)) {
+
             for (Asset asset : exchange.getAssets()) {
                 Path absoluteOutPut = Paths.get(outputPath).toAbsolutePath();
 
                 if (!Files.exists(absoluteOutPut)) {
-                    Files.createDirectory(absoluteOutPut);
+                    Files.createDirectories(absoluteOutPut);
                 }
 
                 String absolutePath = absoluteOutPut.toString() + File.separator + asset.getName() + Features.DOT + asset.getExtension();

@@ -9,20 +9,14 @@ package io.diekema.dingo.feast;
 import io.diekema.dingo.feast.destinations.Destination;
 import io.diekema.dingo.feast.processors.*;
 import io.diekema.dingo.feast.processors.html.HtmlReplaceAssetProcessor;
-import io.diekema.dingo.feast.processors.js.JavascriptProcessor;
-import io.diekema.dingo.feast.processors.less.LessProcessor;
 import io.diekema.dingo.feast.sources.PipelineAggregateSource;
 import io.diekema.dingo.feast.sources.PipelineSource;
 import io.diekema.dingo.feast.sources.Source;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
-
-import static io.diekema.dingo.feast.Features.DOT;
 
 /**
  * Created by rdiekema on 8/23/16.
@@ -64,11 +58,6 @@ public class Pipeline {
         return this;
     }
 
-    public Pipeline flow(String operation) {
-        joints.add(SupportedOperations.get(operation));
-        return this;
-    }
-
     public Pipeline as(String name) {
         joints.add(new RenamingProcessor(name));
         return this;
@@ -89,7 +78,7 @@ public class Pipeline {
         return this;
     }
 
-    public Pipeline process(Processor processor){
+    public Pipeline process(Processor processor) {
         joints.add(processor);
         return this;
     }
@@ -118,34 +107,4 @@ public class Pipeline {
         return exchange.getAssets();
     }
 
-    private static final class SupportedOperations {
-
-        private static final Map<String, Processor> operations = new HashMap<String, Processor>();
-
-        static {
-            // Text Operations (Mostly for testing.
-            operations.put(Features.Format.text + DOT + Features.Operations.concat, new ConcatenatingProcessor());
-
-            // HTML Operations
-            operations.put(Features.Format.html + DOT + Features.Operations.noop, new NoOpMessageProcessor());
-
-            // CSS Operations
-            operations.put(Features.Format.css + DOT + Features.Operations.concat, new ConcatenatingProcessor());
-
-            // JS Operations
-            operations.put(Features.Format.js + DOT + Features.Operations.concat, new ConcatenatingProcessor());
-            operations.put(Features.Format.js + DOT + Features.Operations.minify, new JavascriptProcessor());
-
-            // SASS Operations
-            operations.put(Features.Format.sass + DOT + Features.Operations.concat, new ConcatenatingProcessor());
-
-            // LESS Operations
-            operations.put(Features.Format.less + DOT + Features.Operations.concat, new ConcatenatingProcessor());
-            operations.put(Features.Format.less + DOT + Features.Operations.compile, new LessProcessor());
-        }
-
-        static Processor get(String operation) {
-            return operations.get(operation);
-        }
-    }
 }

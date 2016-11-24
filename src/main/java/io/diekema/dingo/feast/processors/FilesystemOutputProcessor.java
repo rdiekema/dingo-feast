@@ -8,7 +8,6 @@ package io.diekema.dingo.feast.processors;
 
 import io.diekema.dingo.feast.Asset;
 import io.diekema.dingo.feast.Exchange;
-import io.diekema.dingo.feast.Features;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -24,8 +23,6 @@ import java.nio.file.Paths;
 public class FilesystemOutputProcessor implements Processor {
 
     private String outputPath;
-    private String NAME_TEMPLATE = "%s%s.%s";
-
 
     public FilesystemOutputProcessor(String outputPath) {
         this.outputPath = outputPath;
@@ -38,12 +35,16 @@ public class FilesystemOutputProcessor implements Processor {
                 Path absoluteOutPut = Paths.get(outputPath).toAbsolutePath();
 
                 if (!Files.exists(absoluteOutPut)) {
-                    Files.createDirectory(absoluteOutPut);
+                    Files.createDirectories(absoluteOutPut);
                 }
 
-                String outputFileName = String.format(NAME_TEMPLATE, asset.getName(), asset.getRevision()==null?"":asset.getRevision(), asset.getExtension());
+                StringBuilder outputFilename = new StringBuilder(asset.getName());
+                if (asset.getRevision() != null) {
+                    outputFilename.append(asset.getRevision());
+                }
+                outputFilename.append(".").append(asset.getExtension());
 
-                String absolutePath = absoluteOutPut.toString() + File.separator + outputFileName;
+                String absolutePath = absoluteOutPut.toString() + File.separator + outputFilename.toString();
                 FileWriter fileWriter = new FileWriter(absolutePath);
                 fileWriter.write(asset.getContent());
                 fileWriter.flush();

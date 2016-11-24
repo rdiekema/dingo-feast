@@ -9,7 +9,7 @@ import java.io.IOException;
 /**
  * Created by rdiekema on 10/2/16.
  */
-public class Version implements Processor {
+public class VersionProcessor implements Processor {
 
     @Override
     public void process(Exchange exchange) throws IOException {

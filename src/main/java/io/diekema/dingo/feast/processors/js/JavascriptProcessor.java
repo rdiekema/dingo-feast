@@ -26,16 +26,18 @@ public class JavascriptProcessor extends NoOpMessageProcessor {
     public void process(Exchange exchange) throws IOException {
         List<Asset> assetList = exchange.getAssets();
 
-        ClosureCompilerContext closureCompilerContext = new ClosureCompilerContext();
+        if(!assetList.isEmpty()) {
+            ClosureCompilerContext closureCompilerContext = new ClosureCompilerContext();
 
-        List<SourceFile> sourceFiles = new ArrayList<>();
-        for(Asset asset : assetList){
-            SourceFile file =  SourceFile.fromReader(asset.getName(), new StringReader(asset.getContent()));
-            sourceFiles.add(file);
+            List<SourceFile> sourceFiles = new ArrayList<>();
+            for (Asset asset : assetList) {
+                SourceFile file = SourceFile.fromReader(asset.getName(), new StringReader(asset.getContent()));
+                sourceFiles.add(file);
+            }
+
+            String minified = closureCompilerContext.minify(sourceFiles);
+
+            exchange.setAssets(Collections.singletonList(new Asset(null, minified, null, "js")));
         }
-
-        String minified = closureCompilerContext.minify(sourceFiles);
-
-        exchange.setAssets(Collections.singletonList(new Asset(null, minified, null, "js")));
     }
 }

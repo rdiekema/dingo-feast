@@ -3,6 +3,10 @@ package io.diekema.dingo.feast.test;
 import io.diekema.dingo.feast.Asset;
 import io.diekema.dingo.feast.Pipeline;
 import io.diekema.dingo.feast.destinations.FileSystemDestination;
+import io.diekema.dingo.feast.processors.ConcatenatingProcessor;
+import io.diekema.dingo.feast.processors.js.JavascriptProcessor;
+import io.diekema.dingo.feast.processors.less.LessProcessor;
+import io.diekema.dingo.feast.processors.sass.ScssProcessor;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -19,7 +23,8 @@ public class PipelineTest {
     @Test
     public void testNoOp() throws IOException {
         List<Asset> results = pipe().from(fileSystem("src/test/resources", "glob:{**/,}*.{less,js,html}"))
-                .flow("text.concat")
+                .process(new ConcatenatingProcessor())
+                .as("noop_concat")
                 .file("target/dist")
                 .run();
 
@@ -32,11 +37,11 @@ public class PipelineTest {
 
     @Test
     public void testClosureCompiler() throws IOException {
-        List<Asset> results = pipe().from(fileSystem("src/test/resources", "glob:{**/,}*.{js}"))
-                .flow("js.min")
+        List<Asset> results = pipe().from(fileSystem("src/test/resources/js", "glob:{**/,}*.{js}"))
+                .process(new JavascriptProcessor())
+                .as("app.min")
                 .file("target/dist")
                 .run();
-
 
         for (Asset result : results) {
             System.out.println(result.getContent());
@@ -48,8 +53,8 @@ public class PipelineTest {
     @Test
     public void testJsMinifyRename() throws IOException {
         List<Asset> results = pipe().from(fileSystem("src/test/resources", "glob:{**/,}*.{js}"))
-                .flow("js.min")
-                .as("app.min.js")
+                .process(new JavascriptProcessor())
+                .as("app.min")
                 .file("target/dist")
                 .run();
 
@@ -76,7 +81,7 @@ public class PipelineTest {
     @Test
     public void testHtmlReferenceReplace() throws IOException {
         List<Asset> results = pipe().from(fileSystem("src/test/resources", "glob:{**/,}*.{js}"))
-                .flow("js.min")
+                .process(new JavascriptProcessor())
                 .as("app.min.js")
                 .file("target/dist")
                 .replace(new Pipeline().from(fileSystem("src/test/resources", "glob:{**/,}*.{html}")))
@@ -93,7 +98,7 @@ public class PipelineTest {
 
     @Test
     public void testLessOutput() throws IOException {
-        List<Asset> results = pipe().from(fileSystem("src/test/resources", "glob:{**/,}*.{less}")).flow("less.compile").as("less_test").to(new FileSystemDestination("target/dist")).run();
+        List<Asset> results = pipe().from(fileSystem("src/test/resources/test.less", "glob:{**/,}*.{less}")).process(new LessProcessor()).as("less_test").to(new FileSystemDestination("target/dist")).run();
 
         for (Asset result : results) {
             System.out.println(result.getContent());
@@ -107,13 +112,13 @@ public class PipelineTest {
         List<Asset> results = pipe()
                 .enrich(
                         new Pipeline().from(fileSystem("src/test/resources", "glob:{**/,}*.{js}"))
-                                .flow("js.min")
+                                .process(new JavascriptProcessor())
                                 .as("app_scripts")
                                 .file("target/dist")
                 )
                 .enrich(
                         new Pipeline().from(fileSystem("src/test/resources", "glob:{**/,}*.{less}"))
-                                .flow("less.compile")
+                                .process(new LessProcessor())
                                 .as("app_styles")
                                 .file("target/dist")
                 )
@@ -134,11 +139,11 @@ public class PipelineTest {
     public void testNewPiping() throws IOException {
         pipe().from(
                 pipe().from(fileSystem("src/test/resources", "glob:{**/,}*.{js}"))
-                        .flow("js.min")
+                        .process(new JavascriptProcessor())
                         .as("app_scripts")
                         .to(fileSystem("target/dist")),
                 pipe().from(fileSystem("src/test/resources", "glob:{**/,}*.{less}"))
-                        .flow("less.compile")
+                        .process(new LessProcessor())
                         .as("app_styles")
                         .to(fileSystem("target/dist"))
         ).replace(
@@ -154,5 +159,16 @@ public class PipelineTest {
                 .log()
                 .to(fileSystem("target/dist/templates"))
                 .run();
+    }
+
+    @Test
+    public void testSassOutput() throws IOException {
+        List<Asset> results = pipe().from(singleFile("src/test/resources/test.scss")).process(new ScssProcessor()).as("sass_test").to(new FileSystemDestination("target/dist")).run();
+
+        for (Asset result : results) {
+            System.out.println(result.getContent());
+            System.out.println(result.getName());
+            System.out.println(result.getCurrentPath().toString());
+        }
     }
 }

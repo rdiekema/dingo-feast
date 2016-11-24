@@ -12,6 +12,7 @@ import com.github.sommeri.less4j.core.ThreadUnsafeLessCompiler;
 import io.diekema.dingo.feast.Asset;
 import io.diekema.dingo.feast.Exchange;
 import io.diekema.dingo.feast.processors.NoOpMessageProcessor;
+import io.diekema.dingo.feast.processors.Processor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,25 +22,21 @@ import java.util.Arrays;
 /**
  * Created by rdiekema on 9/9/16.
  */
-public class LessProcessor extends NoOpMessageProcessor {
+public class LessProcessor implements Processor {
 
     private static final Logger log = LoggerFactory.getLogger(LessProcessor.class.getName());
 
     @Override
     public void process(Exchange exchange) throws IOException {
-        StringBuilder lessConcatenator = new StringBuilder();
 
         for (Asset asset : exchange.getAssets()) {
-            lessConcatenator.append(asset.getContent());
-        }
-
-        LessCompiler compiler = new ThreadUnsafeLessCompiler();
-
-        try {
-            LessCompiler.CompilationResult result = compiler.compile(lessConcatenator.toString());
-            exchange.setAssets(Arrays.asList(new Asset("app", result.getCss(), null, "css"), new Asset("app", result.getSourceMap(), null, "map")));
-        } catch (Less4jException e) {
-            log.error(e.getMessage());
+            try {
+                LessCompiler compiler = new ThreadUnsafeLessCompiler();
+                LessCompiler.CompilationResult result = compiler.compile(asset.getOriginalPath().toFile());
+                exchange.setAssets(Arrays.asList(new Asset(asset.getName(), result.getCss(), null, "css"), new Asset(asset.getName(), result.getSourceMap(), null, "map")));
+            } catch (Less4jException e) {
+                log.error(e.getMessage());
+            }
         }
     }
 }

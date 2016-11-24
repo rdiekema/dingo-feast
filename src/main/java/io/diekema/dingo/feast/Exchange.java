@@ -18,7 +18,7 @@ public class Exchange {
 
     public Exchange() {
 
-        this.assets = new LinkedList<Asset>();
+        this.assets = new LinkedList<>();
     }
 
     public void enrich(List<Asset> assets) {
