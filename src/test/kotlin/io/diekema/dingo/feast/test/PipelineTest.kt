@@ -3,6 +3,7 @@ package io.diekema.dingo.feast.test
 import io.diekema.dingo.feast.*
 import io.diekema.dingo.feast.destinations.FileSystemDestination
 import io.diekema.dingo.feast.processors.ConcatenatingProcessor
+import io.diekema.dingo.feast.processors.image.PngProcessor
 import io.diekema.dingo.feast.processors.js.JavascriptProcessor
 import io.diekema.dingo.feast.processors.less.LessProcessor
 import io.diekema.dingo.feast.processors.sass.ScssProcessor
@@ -19,7 +20,7 @@ class PipelineTest {
     @Test
     @Throws(IOException::class)
     fun testNoOp() {
-        val results = f.pipe().from(f.fileSystem("src/test/resources", "glob:{**/,}*.{less,js,html}"))
+        val results = f.pipeline().from(f.fileSystem("src/test/resources", "glob:{**/,}*.{less,js,html}"))
                 .process(ConcatenatingProcessor())
                 .`as`("noop_concat")
                 .file("target/dist")
@@ -35,7 +36,7 @@ class PipelineTest {
     @Test
     @Throws(IOException::class)
     fun testClosureCompiler() {
-        val results = f.pipe().from(f.fileSystem("src/test/resources/js", "glob:{**/,}*.{js}"))
+        val results = f.pipeline().from(f.fileSystem("src/test/resources/js", "glob:{**/,}*.{js}"))
                 .process(JavascriptProcessor())
                 .`as`("app.min")
                 .file("target/dist")
@@ -51,7 +52,7 @@ class PipelineTest {
     @Test
     @Throws(IOException::class)
     fun testJsMinifyRename() {
-        val results = f.pipe().from(f.fileSystem("src/test/resources", "glob:{**/,}*.{js}"))
+        val results = f.pipeline().from(f.fileSystem("src/test/resources", "glob:{**/,}*.{js}"))
                 .process(JavascriptProcessor())
                 .`as`("app.min")
                 .file("target/dist")
@@ -68,7 +69,7 @@ class PipelineTest {
     @Test
     @Throws(IOException::class)
     fun testHtmlOutput() {
-        val results = f.pipe().from(f.fileSystem("src/test/resources", "glob:{**/,}*.{html}")).file("target/dist").run()
+        val results = f.pipeline().from(f.fileSystem("src/test/resources", "glob:{**/,}*.{html}")).file("target/dist").run()
 
 
         for (result in results) {
@@ -81,7 +82,7 @@ class PipelineTest {
     @Test
     @Throws(IOException::class)
     fun testHtmlReferenceReplace() {
-        val results = f.pipe().from(f.fileSystem("src/test/resources", "glob:{**/,}*.{js}"))
+        val results = f.pipeline().from(f.fileSystem("src/test/resources", "glob:{**/,}*.{js}"))
                 .process(JavascriptProcessor())
                 .`as`("app.min.js")
                 .file("target/dist")
@@ -100,7 +101,7 @@ class PipelineTest {
     @Test
     @Throws(IOException::class)
     fun testLessOutput() {
-        val results = f.pipe().from(f.fileSystem("src/test/resources/test.less", "glob:{**/,}*.{less}")).process(LessProcessor()).`as`("less_test").to(FileSystemDestination("target/dist")).run()
+        val results = f.pipeline().from(f.fileSystem("src/test/resources/test.less", "glob:{**/,}*.{less}")).process(LessProcessor()).`as`("less_test").to(FileSystemDestination("target/dist")).run()
 
         for (result in results) {
             println(result.content)
@@ -112,7 +113,7 @@ class PipelineTest {
     @Test
     @Throws(IOException::class)
     fun testLessAndJsReplaceOutput() {
-        val results = f.pipe()
+        val results = f.pipeline()
                 .enrich(
                         Pipeline().from(f.fileSystem("src/test/resources", "glob:{**/,}*.{js}"))
                                 .process(JavascriptProcessor())
@@ -141,24 +142,24 @@ class PipelineTest {
     @Test
     @Throws(IOException::class)
     fun testNewPiping() {
-        f.pipe().from(arrayOf(
-                f.pipe().from(f.fileSystem("src/test/resources", "glob:{**/,}*.{js}"))
+        f.pipeline().from(arrayOf(
+                f.pipeline().from(f.fileSystem("src/test/resources", "glob:{**/,}*.{js}"))
                         .process(JavascriptProcessor())
                         .`as`("app_scripts")
                         .to(f.fileSystem("target/dist")),
-                f.pipe().from(f.fileSystem("src/test/resources", "glob:{**/,}*.{less}"))
+                f.pipeline().from(f.fileSystem("src/test/resources", "glob:{**/,}*.{less}"))
                         .process(LessProcessor())
                         .`as`("app_styles")
                         .to(f.fileSystem("target/dist")))
         ).replace(
-                f.pipe().from(f.fileSystem("src/test/resources", "glob:{**/,}*.{html}"))
+                f.pipeline().from(f.fileSystem("src/test/resources", "glob:{**/,}*.{html}"))
         ).to(f.fileSystem("target/dist")).log().run()
     }
 
     @Test
     @Throws(IOException::class)
     fun testTemplateCaching() {
-        f.pipe()
+        f.pipeline()
                 .from(f.fileSystem("src/test/resources/js/templates", "glob:{**/,}*.{html}"))
                 .process(f.templateCache("exampleApp", "templates.cache"))
                 .log()
@@ -169,12 +170,18 @@ class PipelineTest {
     @Test
     @Throws(IOException::class)
     fun testSassOutput() {
-        val results = f.pipe().from(f.singleFile("src/test/resources/sass/test.scss")).process(ScssProcessor()).`as`("sass_test").to(FileSystemDestination("target/dist")).run()
+        val results = f.pipeline().from(f.singleFile("src/test/resources/sass/test.scss")).process(ScssProcessor()).`as`("sass_test").to(FileSystemDestination("target/dist")).run()
 
         for (result in results) {
             println(result.content)
             println(result.name)
             println(result.currentPath.toString())
         }
+    }
+
+    @Test
+    @Throws(IOException::class)
+    fun testPngSpriting() {
+        val result = f.pipeline().from(f.fileSystem("src/test/resources/icons", "glob:{**/,}*.{png}")).process(PngProcessor("target/dist/icons")).run()
     }
 }

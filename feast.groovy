@@ -6,36 +6,34 @@
 
 
 import io.diekema.dingo.feast.Asset
-
 import io.diekema.dingo.feast.Exchange
 import io.diekema.dingo.feast.processors.Processor
-import io.diekema.dingo.feast.processors.VersionProcessor
-import io.diekema.dingo.feast.processors.js.JavascriptProcessor
-import io.diekema.dingo.feast.processors.less.LessProcessor
-import io.diekema.dingo.feast.processors.sass.ScssProcessor
 import org.slf4j.LoggerFactory
+
+import static io.diekema.dingo.feast.DSL.*
 
 def outputDir = "target/dist"
 def inputDir = "src/test/resources"
 def templateDir = inputDir + "/js/templates"
 
-def jsPipe = pipe().from(fileSystem(inputDir, "glob:{**/,}*.{js}", true)).process(new JavascriptProcessor()).as("app_scripts").process(new VersionProcessor()).file(outputDir)
-def lessPipe = pipe().from(fileSystem(inputDir + "/test.less", "glob:{**/,}*.{less}")).process(new LessProcessor()).as("app_styles").process(new VersionProcessor()).file(outputDir)
-def scssPipe = pipe().from(DSL.Companion.singleFile(inputDir + "/sass/test.scss")).process(new ScssProcessor(inputDir + "/nested_scss")).as("app_sass_styles").process(new VersionProcessor()).file(outputDir)
+def jsPipe = pipeline().from(fileSystem(inputDir, "glob:{**/,}*.{js}", true)).process(js()).as("app_scripts").process(version()).file(outputDir)
+def lessPipe = pipeline().from(fileSystem(inputDir + "/test.less", "glob:{**/,}*.{less}")).process(less()).as("app_styles").process(version()).file(outputDir)
+def scssPipe = pipeline().from(singleFile(inputDir + "/sass/test.scss")).process(sass(inputDir + "/nested_scss")).as("app_sass_styles").process(version()).file(outputDir)
+def spritePipe = pipeline().from(fileSystem("src/test/resources/icons", "glob:{**/,}*.{png}")).process(sprite("target/dist/icons")).run()
 
-def templateCachePipe = pipe().from(fileSystem(templateDir, "glob:{**/,}*.{html}"))
+def templateCachePipe = pipeline().from(fileSystem(templateDir, "glob:{**/,}*.{html}"))
         .process(templateCache("app", "templates"))
-        .process(new JavascriptProcessor())
+        .process(js())
         .as("templates")
-        .process(new VersionProcessor() as Processor)
+        .process(version())
         .file(outputDir)
 
-def htmlPipe = pipe().from(fileSystem(inputDir, "glob:{**/,}*.{html}"));
+def htmlPipe = pipeline().from(fileSystem(inputDir, "glob:{**/,}*.{html}"));
 
 def start = new Date()
 
 List<Asset> results =
-        pipe()
+        pipeline()
                 .from(jsPipe, lessPipe, scssPipe, templateCachePipe)
                 .replace(htmlPipe)
                 .file(outputDir)

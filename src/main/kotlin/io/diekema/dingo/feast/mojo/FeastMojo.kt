@@ -6,13 +6,15 @@
 
 package io.diekema.dingo.feast.mojo
 
-import io.diekema.dingo.feast.Build
+import groovy.lang.GroovyShell
 import org.apache.maven.plugin.AbstractMojo
 import org.apache.maven.plugin.MojoExecutionException
 import org.apache.maven.plugin.MojoFailureException
 import org.apache.maven.plugins.annotations.Mojo
 import org.apache.maven.plugins.annotations.Parameter
-import kotlin.reflect.full.createInstance
+import java.io.IOException
+import java.nio.file.Files
+import java.nio.file.Paths
 
 /**
  * Created by rdiekema on 8/26/16.
@@ -21,13 +23,19 @@ import kotlin.reflect.full.createInstance
 @Mojo(name = "feast")
 class FeastMojo : AbstractMojo() {
 
-    @Parameter private val className: String? = null
+    @Parameter(name="scriptFile") val scriptFile: String? = null
 
     @Throws(MojoExecutionException::class, MojoFailureException::class)
     override fun execute() {
-        val kClass = Class.forName(className).kotlin
-        val build = kClass.createInstance() as Build
+        if (scriptFile != null && Files.exists(Paths.get(scriptFile))) {
+            val groovyShell = GroovyShell()
+            try {
+                groovyShell.evaluate(Paths.get(scriptFile).toFile())
+            } catch (e: IOException) {
+                log.error(e.message)
+            }
 
-        build.run()
+        }
+
     }
 }

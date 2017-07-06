@@ -1,33 +1,35 @@
 <!DOCTYPE html>
 
 <html ng-app="app">
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-        <!-- inject resources here based on class attribute -->
-        <link class="app_styles" rel="stylesheet" type="text/css" href="test.css">
-        <link class="app_sass_styles" rel="stylesheet" type="text/css" href="test.css"/>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <!-- inject resources here based on class attribute -->
+    <link class="app_styles" rel="stylesheet" type="text/css" href="test.css">
+    <link class="app_sass_styles" rel="stylesheet" type="text/css" href="test.css"/>
+    <link class="app_sprites" rel="stylesheet" type="text/css" href="icons/sprites.css"/>
+    <title>
+        Test
+    </title>
+</head>
 
-        <title>
-            Test
-        </title>
-    </head>
+<body ng-controller="AppController">
+<h1 class="message">{{message}}</h1>
 
-    <body ng-controller="AppController">
-        <h1 class="message">{{message}}</h1>
+<div ng-include src="'test1.html'"></div>
 
-        <div ng-include src="'test1.html'"></div>
+<div class="ic_cloud_done_black_48dp"></div>
 
-        <!-- inject resources here based on class attribute -->
-        <script class="app_scripts" src="js/angular.js"></script>
-        <script class="app_scripts" src="js/test.js"></script>
-        <script class="app_scripts" src="js/test2.js"></script>
-        <!-- end injected resources -->
+<!-- inject resources here based on class attribute -->
+<script class="app_scripts" src="js/angular.js"></script>
+<script class="app_scripts" src="js/test.js"></script>
+<script class="app_scripts" src="js/test2.js"></script>
+<!-- end injected resources -->
 
 
-        <!-- inject resources here based on class attribute -->
-        <script class="templates" src=""></script>
-        <!-- end injected resources -->
+<!-- inject resources here based on class attribute -->
+<script class="templates" src=""></script>
+<!-- end injected resources -->
 
-        <span class="test"></span>
-    </body>
+<span class="test"></span>
+</body>
 </html>
