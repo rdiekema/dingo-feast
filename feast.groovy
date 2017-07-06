@@ -6,14 +6,14 @@
 
 
 import io.diekema.dingo.feast.Asset
+
 import io.diekema.dingo.feast.Exchange
-import io.diekema.dingo.feast.processors.*
+import io.diekema.dingo.feast.processors.Processor
+import io.diekema.dingo.feast.processors.VersionProcessor
 import io.diekema.dingo.feast.processors.js.JavascriptProcessor
 import io.diekema.dingo.feast.processors.less.LessProcessor
 import io.diekema.dingo.feast.processors.sass.ScssProcessor
 import org.slf4j.LoggerFactory
-
-import static io.diekema.dingo.feast.DSL.*
 
 def outputDir = "target/dist"
 def inputDir = "src/test/resources"
@@ -21,7 +21,7 @@ def templateDir = inputDir + "/js/templates"
 
 def jsPipe = pipe().from(fileSystem(inputDir, "glob:{**/,}*.{js}", true)).process(new JavascriptProcessor()).as("app_scripts").process(new VersionProcessor()).file(outputDir)
 def lessPipe = pipe().from(fileSystem(inputDir + "/test.less", "glob:{**/,}*.{less}")).process(new LessProcessor()).as("app_styles").process(new VersionProcessor()).file(outputDir)
-def scssPipe = pipe().from(singleFile(inputDir + "/sass/test.scss")).process(new ScssProcessor(inputDir + "/nested_scss")).as("app_sass_styles").process(new VersionProcessor()).file(outputDir)
+def scssPipe = pipe().from(DSL.Companion.singleFile(inputDir + "/sass/test.scss")).process(new ScssProcessor(inputDir + "/nested_scss")).as("app_sass_styles").process(new VersionProcessor()).file(outputDir)
 
 def templateCachePipe = pipe().from(fileSystem(templateDir, "glob:{**/,}*.{html}"))
         .process(templateCache("app", "templates"))
@@ -45,7 +45,7 @@ println "\nTotal Time:"
 println new Date().getTime() - start.getTime() + "ms"
 
 // Test class to demonstrate implementing additional processors from within a groovy source file.
-public class LoggingGroovyClass implements Processor {
+class LoggingGroovyClass implements Processor {
     def log = LoggerFactory.getLogger(LoggingGroovyClass.class.getName());
 
     @Override
