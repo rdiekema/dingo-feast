@@ -182,6 +182,6 @@ class PipelineTest {
     @Test
     @Throws(IOException::class)
     fun testPngSpriting() {
-        val result = f.pipeline().from(f.fileSystem("src/test/resources/icons", "glob:{**/,}*.{png}")).process(PngProcessor("target/dist/icons")).run()
+        val result = f.pipeline().from(f.fileSystem("src/test/resources/icons", "glob:{**/,}*.{png}")).process(PngProcessor("target/dist", "sprites", filename = "sprites")).run()
     }
 }

@@ -86,8 +86,8 @@ class DSL {
         }
 
         @JvmStatic
-        fun sprite(dir: String) : PngProcessor {
-            return PngProcessor(dir)
+        fun sprite(dir: String, subdir: String, name: String) : PngProcessor {
+            return PngProcessor(dir, subdir, name)
         }
     }
 }

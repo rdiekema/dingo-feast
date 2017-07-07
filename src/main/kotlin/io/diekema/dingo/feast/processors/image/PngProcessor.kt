@@ -13,14 +13,17 @@ import javax.imageio.ImageIO
 /**
  * Created by rdiekema-idexx on 7/6/17.
  */
-class PngProcessor(val outputDir: String?) : Processor {
+class PngProcessor(val outputDir: String, val subdir: String, val filename: String) : Processor {
     val JSON = jacksonObjectMapper()
+    val IMAGE_FORMAT = "PNG"
 
     override fun process(exchange: Exchange) {
         val sprites = mutableListOf<Sprite>()
         var sumX = 0
         var maxHeight = 0
         val spriteMap = mutableMapOf<String, Map<String, Any>>()
+
+        val imageFilename = subdir + File.separator + "$filename.png"
 
         exchange.assets.forEach { asset ->
             yieldSprite(asset)?.let { sprite ->
@@ -40,33 +43,24 @@ class PngProcessor(val outputDir: String?) : Processor {
         sprites.forEach { sprite ->
             g.drawImage(sprite.image, xPos, 0, null)
             xPos += sprite.width
-            val css = """.${sprite.name} { background: url('sprites.png') ${xOff}px 0px; height: ${sprite.height}px; width: ${sprite.width}px; }"""
+            val css = """.${sprite.name} { background: url('$imageFilename') ${xOff}px 0px; height: ${sprite.height}px; width: ${sprite.width}px; }"""
             spriteMap.put(sprite.name, mapOf(
                     Pair("x", xPos),
                     Pair("y", sprite.height),
-                    Pair("url", "sprites.png"),
+                    Pair("url", imageFilename),
                     Pair("css", css)
-                )
+            )
             )
             xOff -= sprite.width
             cssString += css
         }
 
-        Paths.get(outputDir).toAbsolutePath().toFile().mkdirs()
-        val absoluteOutputPath = Paths.get(outputDir + File.separator + "sprites.png").toAbsolutePath()
-        val spriteMapPath = Paths.get(outputDir + File.separator + "sprites.json").toAbsolutePath()
-        val cssPath = Paths.get(outputDir + File.separator + "sprites.css").toAbsolutePath()
-        File(absoluteOutputPath.toString()).createNewFile()
-        File(cssPath.toString()).createNewFile()
-        
-        JSON.writeValue(FileWriter(spriteMapPath.toFile(), false), spriteMap)
-        val cssFileWriter = FileWriter(cssPath.toFile(), false)
-        cssFileWriter.write(cssString)
-        cssFileWriter.flush()
-        cssFileWriter.close()
+        Paths.get(outputDir + File.separator + imageFilename).toAbsolutePath().toFile().mkdirs()
+        val absoluteImageOutputPath = Paths.get(outputDir + File.separator + imageFilename).toAbsolutePath()
+        File(absoluteImageOutputPath.toString()).createNewFile()
 
-        ImageIO.write(bufferSpriteSheet, "PNG", absoluteOutputPath.toFile())
-        exchange.assets = mutableListOf(Asset("sprites.png", "", absoluteOutputPath.toString(), "png"))
+        ImageIO.write(bufferSpriteSheet, IMAGE_FORMAT, absoluteImageOutputPath.toFile())
+        exchange.assets = mutableListOf(Asset(null, cssString, null, "css"), Asset(null, JSON.writeValueAsString(spriteMap), null, "json"))
     }
 
     fun yieldSprite(asset: Asset): Sprite? {

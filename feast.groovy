@@ -19,7 +19,7 @@ def templateDir = inputDir + "/js/templates"
 def jsPipe = pipeline().from(fileSystem(inputDir, "glob:{**/,}*.{js}", true)).process(js()).as("app_scripts").process(version()).file(outputDir)
 def lessPipe = pipeline().from(fileSystem(inputDir + "/test.less", "glob:{**/,}*.{less}")).process(less()).as("app_styles").process(version()).file(outputDir)
 def scssPipe = pipeline().from(singleFile(inputDir + "/sass/test.scss")).process(sass(inputDir + "/nested_scss")).as("app_sass_styles").process(version()).file(outputDir)
-def spritePipe = pipeline().from(fileSystem("src/test/resources/icons", "glob:{**/,}*.{png}")).process(sprite("target/dist/icons")).run()
+def spritePipe = pipeline().from(fileSystem("src/test/resources/icons", "glob:{**/,}*.{png}")).process(sprite(outputDir, "sprites", "sprites")).as("app_css_sprites").process(version()).file(outputDir)
 
 def templateCachePipe = pipeline().from(fileSystem(templateDir, "glob:{**/,}*.{html}"))
         .process(templateCache("app", "templates"))
@@ -34,7 +34,7 @@ def start = new Date()
 
 List<Asset> results =
         pipeline()
-                .from(jsPipe, lessPipe, scssPipe, templateCachePipe)
+                .from(jsPipe, lessPipe, scssPipe, templateCachePipe, spritePipe)
                 .replace(htmlPipe)
                 .file(outputDir)
                 .run()
