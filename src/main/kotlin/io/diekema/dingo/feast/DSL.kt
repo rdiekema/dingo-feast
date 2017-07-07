@@ -27,16 +27,16 @@ class DSL {
     companion object {
 
         @JvmStatic
-        fun fileSystem(filePath: String, syntaxAndPattern: String): Source {
+        fun files(filePath: String, syntaxAndPattern: String): Source {
             return SimpleFileSystemSource(filePath, syntaxAndPattern)
         }
 
         @JvmStatic
-        fun fileSystem(filePath: String, syntaxAndPattern: String, recursive: Boolean): Source {
+        fun files(filePath: String, syntaxAndPattern: String, recursive: Boolean): Source {
             if (recursive) {
                 return RecursiveFileSystemSource(filePath, syntaxAndPattern)
             } else {
-                return fileSystem(filePath, syntaxAndPattern)
+                return files(filePath, syntaxAndPattern)
             }
         }
 
@@ -46,7 +46,7 @@ class DSL {
         }
 
         @JvmStatic
-        fun fileSystem(destination: String): Destination {
+        fun files(destination: String): Destination {
             return FileSystemDestination(destination)
         }
 

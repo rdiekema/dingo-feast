@@ -7,6 +7,9 @@
 package io.diekema.dingo.feast.sources
 
 import io.diekema.dingo.feast.*
+import kotlinx.coroutines.experimental.CommonPool
+import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.runBlocking
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -17,33 +20,19 @@ import java.util.concurrent.*
 /**
  * Created by rdiekema on 9/23/16.
  */
-class PipelineAggregateSource(sourcePipelines: Array<Pipeline>) : Source {
-
-    private val sourcePipelines: Array<Pipeline> = sourcePipelines
-    private val completionService: CompletionService<List<Asset>>
-
-    init {
-        this.completionService = ExecutorCompletionService<List<Asset>>(Executors.newFixedThreadPool(sourcePipelines.size))
-    }
+class PipelineAggregateSource(private val sourcePipelines: Array<Pipeline>) : Source {
 
     @Throws(IOException::class)
     override fun collect(): Exchange {
-        val submitted = ArrayList<Future<List<Asset>>>()
-        for (p in sourcePipelines) {
-            submitted.add(completionService.submit(PipelineCallable(p)))
-        }
-
         val assetList = ArrayList<Asset>()
-        for (i in submitted.indices) {
-            try {
-                val result = completionService.take()
-                assetList.addAll(result.get())
-            } catch (e: InterruptedException) {
-                log.error(e.message)
-            } catch (e: ExecutionException) {
-                log.error(e.message)
-            }
-
+        runBlocking {
+            sourcePipelines
+                .map { pipe ->
+                    async(CommonPool) {
+                        assetList.addAll(pipe.run())
+                    }
+                }
+                .map { it.await() }
         }
 
         val exchange = Exchange()

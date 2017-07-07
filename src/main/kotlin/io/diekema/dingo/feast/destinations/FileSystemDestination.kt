@@ -1,15 +1,15 @@
 package io.diekema.dingo.feast.destinations
 
-import io.diekema.dingo.feast.Asset
 import io.diekema.dingo.feast.Exchange
 import io.diekema.dingo.feast.Features
+import kotlinx.coroutines.experimental.CommonPool
+import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.runBlocking
 import org.apache.commons.lang3.StringUtils
-
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
 import java.nio.file.Files
-import java.nio.file.Path
 import java.nio.file.Paths
 
 /**
@@ -20,21 +20,26 @@ class FileSystemDestination(internal var outputPath: String) : Destination {
     @Throws(IOException::class)
     override fun deliver(exchange: Exchange): Boolean {
         if (!StringUtils.isEmpty(outputPath)) {
+            runBlocking {
+                exchange.assets.map {
+                    async(CommonPool) {
+                        val absoluteOutPut = Paths.get(outputPath).toAbsolutePath()
 
-            for (asset in exchange.assets) {
-                val absoluteOutPut = Paths.get(outputPath).toAbsolutePath()
+                        if (!Files.exists(absoluteOutPut)) {
+                            Files.createDirectories(absoluteOutPut)
+                        }
 
-                if (!Files.exists(absoluteOutPut)) {
-                    Files.createDirectories(absoluteOutPut)
+                        val absolutePath = absoluteOutPut.toString() + File.separator + it.name + Features.DOT + it.extension
+                        val fileWriter = FileWriter(absolutePath)
+                        fileWriter.write(it.content!!)
+                        fileWriter.flush()
+                        fileWriter.close()
+                        it.currentPath = Paths.get(absolutePath)
+                    }
                 }
-
-                val absolutePath = absoluteOutPut.toString() + File.separator + asset.name + Features.DOT + asset.extension
-                val fileWriter = FileWriter(absolutePath)
-                fileWriter.write(asset.content!!)
-                fileWriter.flush()
-                fileWriter.close()
-                asset.currentPath = Paths.get(absolutePath)
             }
+
+            return true
         }
         return false
     }

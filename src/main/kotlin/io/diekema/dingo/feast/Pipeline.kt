@@ -12,9 +12,10 @@ import io.diekema.dingo.feast.processors.html.HtmlReplaceAssetProcessor
 import io.diekema.dingo.feast.sources.PipelineAggregateSource
 import io.diekema.dingo.feast.sources.PipelineSource
 import io.diekema.dingo.feast.sources.Source
-
+import kotlinx.coroutines.experimental.CommonPool
+import kotlinx.coroutines.experimental.async
 import java.io.IOException
-import java.util.LinkedList
+import java.util.*
 import java.util.logging.Logger
 
 /**
@@ -96,15 +97,16 @@ class Pipeline {
         }
 
         if (destination != null) {
-            destination!!.deliver(exchange)
+            async(CommonPool){
+                destination!!.deliver(exchange)
+            }
         }
 
         return exchange.assets
     }
 
     companion object {
-
-        private val log = Logger.getLogger(Pipeline::class.java.name)
+        private val LOG = Logger.getLogger(Pipeline::class.java.name)
     }
 
 }

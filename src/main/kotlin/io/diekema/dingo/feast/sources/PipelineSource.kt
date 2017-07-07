@@ -8,6 +8,7 @@ package io.diekema.dingo.feast.sources
 
 import io.diekema.dingo.feast.Exchange
 import io.diekema.dingo.feast.Pipeline
+import kotlinx.coroutines.experimental.runBlocking
 
 import java.io.IOException
 

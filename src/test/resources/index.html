@@ -15,9 +15,13 @@
 <body ng-controller="AppController">
 <h1 class="message">{{message}}</h1>
 
-<div ng-include src="'test1.html'"></div>
+<div ng-include="'test1.html'"></div>
 
-<div class="ic_cloud_done_black_48dp"></div>
+<div>
+    <div class="ic_cloud_done_black_48dp"></div>
+    <span>I'm a sprited icon.</span>
+</div>
+
 
 <!-- inject resources here based on class attribute -->
 <script class="app_scripts" src="js/angular.js"></script>

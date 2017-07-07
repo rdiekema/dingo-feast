@@ -6,7 +6,6 @@ import io.diekema.dingo.feast.Exchange
 import io.diekema.dingo.feast.processors.Processor
 import java.awt.image.BufferedImage
 import java.io.File
-import java.io.FileWriter
 import java.nio.file.Paths
 import javax.imageio.ImageIO
 
@@ -44,12 +43,12 @@ class PngProcessor(val outputDir: String, val subdir: String, val filename: Stri
             g.drawImage(sprite.image, xPos, 0, null)
             xPos += sprite.width
             val css = """.${sprite.name} { background: url('$imageFilename') ${xOff}px 0px; height: ${sprite.height}px; width: ${sprite.width}px; }"""
-            spriteMap.put(sprite.name, mapOf(
-                    Pair("x", xPos),
-                    Pair("y", sprite.height),
-                    Pair("url", imageFilename),
-                    Pair("css", css)
-            )
+                spriteMap.put(sprite.name, mapOf(
+                        Pair("x", xPos),
+                        Pair("y", sprite.height),
+                        Pair("url", imageFilename),
+                        Pair("css", css)
+                )
             )
             xOff -= sprite.width
             cssString += css

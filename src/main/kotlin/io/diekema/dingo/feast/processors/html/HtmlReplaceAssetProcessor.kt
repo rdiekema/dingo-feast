@@ -6,19 +6,18 @@
 
 package io.diekema.dingo.feast.processors.html
 
-import io.diekema.dingo.feast.Asset
 import io.diekema.dingo.feast.Exchange
 import io.diekema.dingo.feast.Features
 import io.diekema.dingo.feast.Pipeline
 import io.diekema.dingo.feast.processors.Processor
+import kotlinx.coroutines.experimental.CommonPool
+import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.runBlocking
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Attribute
 import org.jsoup.nodes.Attributes
-import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.parser.Tag
-import org.jsoup.select.Elements
-
 import java.io.IOException
 
 /**
@@ -35,41 +34,46 @@ class HtmlReplaceAssetProcessor(private val assetTargets: Pipeline) : Processor 
         for (asset in targetFiles) {
             val document = Jsoup.parse(asset.content)
 
-            for (replacementAsset in assetList) {
-                val elements = document.select("." + replacementAsset.name)
+            runBlocking {
+                assetList.map { replacementAsset ->
+                    async(CommonPool) {
+                        val elements = document.select("." + replacementAsset.name)
 
-                if (elements.size > 0) {
+                        if (elements.size > 0) {
 
-                    var replacement: Element? = null
-                    when (replacementAsset.extension) {
-                        Features.Format.js -> {
-                            val scriptAttributes = Attributes()
-                            val attribute = Attribute("src", replacementAsset.name + replacementAsset.revision + "." + replacementAsset.extension)
-                            scriptAttributes.put(attribute)
-                            replacement = Element(Tag.valueOf("script"), "", scriptAttributes)
+                            var replacement: Element? = null
+                            when (replacementAsset.extension) {
+                                Features.Format.js -> {
+                                    val scriptAttributes = Attributes()
+                                    val attribute = Attribute("src", replacementAsset.name + replacementAsset.revision + "." + replacementAsset.extension)
+                                    scriptAttributes.put(attribute)
+                                    replacement = Element(Tag.valueOf("script"), "", scriptAttributes)
+                                }
+                                Features.Format.css -> {
+                                    val linkAttributes = Attributes()
+                                    linkAttributes.put(Attribute("rel", "stylesheet"))
+                                    linkAttributes.put(Attribute("type", "text/css"))
+                                    linkAttributes.put(Attribute("href", replacementAsset.name + replacementAsset.revision + "." + replacementAsset.extension))
+                                    replacement = Element(Tag.valueOf("link"), "", linkAttributes)
+                                }
+                            }
+
+                            if (replacement != null) {
+                                elements.first().replaceWith(replacement)
+
+                                for (i in 1..elements.size - 1) {
+                                    elements[i].remove()
+                                }
+                            }
                         }
-                        Features.Format.css -> {
-                            val linkAttributes = Attributes()
-                            linkAttributes.put(Attribute("rel", "stylesheet"))
-                            linkAttributes.put(Attribute("type", "text/css"))
-                            linkAttributes.put(Attribute("href", replacementAsset.name + replacementAsset.revision + "." + replacementAsset.extension))
-                            replacement = Element(Tag.valueOf("link"), "", linkAttributes)
-                        }
+
+
+                        asset.content = document.html()
                     }
+                }.map { it.await() }
 
-                    if (replacement != null) {
-                        elements.first().replaceWith(replacement)
-
-                        for (i in 1..elements.size - 1) {
-                            elements[i].remove()
-                        }
-                    }
-
-                }
 
             }
-
-            asset.content = document.html()
         }
 
         exchange.assets = targetFiles
