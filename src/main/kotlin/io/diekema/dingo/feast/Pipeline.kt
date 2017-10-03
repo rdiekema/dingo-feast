@@ -97,9 +97,7 @@ class Pipeline {
         }
 
         if (destination != null) {
-            async(CommonPool){
                 destination!!.deliver(exchange)
-            }
         }
 
         return exchange.assets
